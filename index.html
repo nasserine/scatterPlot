@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #eee;
+    shape-rendering: crispEdges;
+}
+ 
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+ 
+.loading {
+    font-family: sans-serif;
+    font-size: 15px;
+}
+ 
+.circle {
+    fill: #222;
+}
+
+#punchcard{
+    position: absolute;
+    border: 0.1px solid #eee;
+    width:995px;
+    right: 340px;
+    top: 100px;
+    cursor: pointer;
+    opacity: 0.9;
+ 
+   }
+
+
+   
+   #title{
+     margin-left: 10px;
+    float: left;
+   font-size: 35px;
+   font-family:'impact';
+   font-weight:900;
+   color:#2F4F4F;
+   border: none;
+
+   }
+</style>
+ 
+
+    <div class="container1"  align="center">
+    </br>
+
+      <label id="textTit" for="values_serie1" >  Select year </label>
+      <select  id="textList" onChange="SelectFunction(this);" > 
+      </select>
+    </br></br></br>
+  </div>
+
+  
+<div id="punchcard">
+
+    <input type="text" id="title" placeholder="Population Growth vs Density correlation">
+
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/danfojs@1.1.2/lib/bundle.js"></script>
+<script src="https://d3js.org/d3.v5.js"></script>
+<script src="source.js"></script>
+
+
+
+
+
+<script>
+
+    // set the dimensions and margins of the graph
+    var margin = {top: 0, right: 25, bottom: 30, left: 40},
+        width = 1200 - margin.left - margin.right,
+        height = 220 - margin.top - margin.bottom;
+        var options =[];
+       // df1 =  new dfd.DataFrame([]);
+    
+    // append the svg object to the body of the page
+    var svg = d3.select("#punchcard")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+    
+    //Read the data
+  
+var promises = [];
+
+promises.push(d3.csv("data/population.csv")); 
+
+Promise.all(promises).then(function(values) {
+     
+         const data = values[0];
+        //Labels of row and columns -> unique identifier of the column 
+        var years = d3.map(data, function(d){return d.year;}).keys();
+        var selectBox = document.getElementById('textList');
+
+
+        for(var i = 0, l = years.length; i < l; i++){
+            var item={};
+            item["value"]="option"+i;
+            item["text"]=years[i];
+           options.push(item)
+           }
+           for(var i = 0, l = options.length; i < l; i++){
+                var option = options[i];
+                selectBox.options.add( new Option(option.text, option.value, option.selected) );
+           }
+         
+           draw("1950")
+
+       
+
+        });
+
+
+
+//====== draw function
+function draw(op){
+ 
+ svg.selectAll("*").remove();
+
+
+Promise.all(promises).then(function(values) {
+     
+     const data = values[0];
+
+
+  // filter data from select option (selected variable)
+   //=========create data frame
+   var dataSet=[]
+  
+   values[0].filter(function(d) { 
+
+         if(d['year']==op){
+       
+           dataSet.push(d)
+
+   }
+})
+
+
+df1 =  new dfd.DataFrame(dataSet,{columns: ["country","year","Population","Population_Density","Population_Growth_Rate"]});
+   
+svg
+  .data([df1])
+  .call(scatterPlot());
+
+});
+}
+
+
+
+
+
+
+//====== get value option of <select> element 
+
+    function SelectFunction(sel){
+
+selectOp=sel.options[sel.selectedIndex].text; 
+
+console.log(selectOp)
+draw(selectOp)
+}
+</script>    
+
+
+  
